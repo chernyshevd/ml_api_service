@@ -1,19 +1,20 @@
 """
 Module for the machine learning API service.
 """
+import config
 import uvicorn
-from fastapi import FastAPI, HTTPException, Depends
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-# from sqlalchemy.orm import Session
 from datetime import timedelta
 
-import config
-from src.ml.ml import get_ml_service
-from src.models.models import InputData, User
-from src.db.db import get_db, UserDB, create_initial_users
+from fastapi import FastAPI, HTTPException, Depends
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+
 from src.auth.auth import (
     create_access_token, authenticate_user, get_current_user
 )
+from src.db.db import get_db, UserDB, create_initial_users
+from src.ml.ml import get_ml_service
+from src.models.models import InputData, User
+
 app = FastAPI()
 
 # Конфигурация JWT
