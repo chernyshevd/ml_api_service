@@ -2,7 +2,7 @@
 Module for the machine learning API service.
 """
 import uvicorn
-from fastapi import FastAPI, HTTPException, Depends, Security
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
@@ -12,12 +12,11 @@ import config
 from ml.ml import get_ml_service
 from models.models import InputData, User
 from db.db import get_db, UserDB, create_initial_users
-# from auth import role_required
 
 app = FastAPI()
 
 # Конфигурация JWT
-SECRET_KEY = "123456"  # Замените на ваш секретный ключ
+SECRET_KEY = "123456"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -34,8 +33,8 @@ async def shutdown_event():
     """Handles cleanup tasks on shutdown."""
     pass
 
-# Функция для создания токена
 def create_access_token(data: dict, expires_delta: timedelta = None):
+    """Creates a JWT access token."""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
@@ -45,8 +44,8 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-# Функция для аутентификации пользователя
 async def authenticate_user(username: str, password: str, db: Session):
+    """Authenticates a user by username and password."""
     db_user = db.query(UserDB).filter(UserDB.username == username).first()
     if db_user and db_user.password == password:
         return db_user
@@ -54,17 +53,22 @@ async def authenticate_user(username: str, password: str, db: Session):
 
 @app.post("/token")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    """Выдает JWT токен для аутентификации."""
+    """Issues a JWT token for authentication."""
     db = next(get_db())
     user = await authenticate_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(data={"sub": user.username}, expires_delta=access_token_expires)
+    access_token = create_access_token(
+        data={"sub": user.username}, 
+        expires_delta=access_token_expires
+    )
     return {"access_token": access_token, "token_type": "bearer"}
 
-# Обновленный метод для аутентификации пользователя
-async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+async def get_current_user(
+        token: str = Depends(oauth2_scheme),
+        db: Session = Depends(get_db)):
+    """Retrieves the current user based on the provided token, raises HTTPException if invalid."""
     credentials_exception = HTTPException(
         status_code=401,
         detail="Could not validate credentials",
@@ -83,6 +87,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     return db_user
 
 def role_required(role: str):
+    """Decorator to enforce role-based access control."""
     def decorator(func):
         async def wrapper(*args, **kwargs):
             user = await get_current_user()  # Получаем текущего пользователя
