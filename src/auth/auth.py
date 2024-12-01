@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from fastapi.security import OAuth2PasswordBearer
-from db.db import get_db, UserDB
+
+from src.db.db import get_db, UserDB
 
 SECRET_KEY = "123456"
 ALGORITHM = "HS256"

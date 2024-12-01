@@ -4,14 +4,14 @@ Module for the machine learning API service.
 import uvicorn
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from sqlalchemy.orm import Session
+# from sqlalchemy.orm import Session
 from datetime import timedelta
 
 import config
-from ml.ml import get_ml_service
-from models.models import InputData, User
-from db.db import get_db, UserDB, create_initial_users
-from auth.auth import (
+from src.ml.ml import get_ml_service
+from src.models.models import InputData, User
+from src.db.db import get_db, UserDB, create_initial_users
+from src.auth.auth import (
     create_access_token, authenticate_user, get_current_user
 )
 app = FastAPI()
